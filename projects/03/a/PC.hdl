@@ -16,5 +16,20 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // nulls
+    Not16 (in=in, out=notin);
+    And16 (a=in, b=notin, out=nulin);
+
+    Inc16 (in=regout, out=incin);
+
+    // incrementing or loading...
+    Mux16 (a=incin, b=in, sel=load, out=loadout);    
+    // ...or resetting
+    Mux16 (a=loadout, b=nulin, sel=reset, out=resetout);
+
+    // Change output if any control bit is present
+    Or (a=load, b=inc, out=loadorinc);
+    Or (a=loadorinc, b=reset, out=somebit);
+
+    Register (in=resetout, out=out, out=regout, load=somebit);
 }
