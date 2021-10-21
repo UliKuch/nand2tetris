@@ -11,4 +11,60 @@
 // "white" in every pixel;
 // the screen should remain fully clear as long as no key is pressed.
 
-// Put your code here.
+(RESETP)
+  @p
+  M=0
+
+(LOOP)
+  // read keyboard
+  @KBD
+  D=M
+
+  // goto WHITE if KBD == 0
+  @WHITE
+  D;JEQ
+
+  // else goto BLACK
+  @BLACK
+  0;JMP
+
+(CONTINUE)
+  // p++
+  @p
+  M=M+1
+
+  // goto RESETP if *p + SCREEN == KBD (value at p + address of SCREEN == address of KBD; unsure about notation)
+  @KBD
+  D=A
+  @SCREEN
+  D=D-A
+  @p
+  D=D-M
+  @RESETP
+  D;JEQ
+
+  // goto LOOP
+  @LOOP
+  0;JMP
+
+(WHITE)
+  // *(SCREEN + p) = 0
+  @SCREEN
+  D=A
+  @p
+  A=D+M
+  M=0
+
+  @CONTINUE
+  0;JMP
+
+(BLACK)
+  // *(SCREEN + p) = -1
+  @SCREEN
+  D=A
+  @p
+  A=D+M
+  M=-1
+
+  @CONTINUE
+  0;JMP
