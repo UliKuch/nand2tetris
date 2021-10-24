@@ -39,5 +39,47 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    Mux16 (a=instruction, b=aluOut, sel=instruction[15], out=aRegIn);
+
+    // load A if A-instruction or A-dest bit
+    Not (in=instruction[15], out=aInstr);
+    Or (a=aInstr, b=instruction[5], out=loadA);
+
+    ARegister (in=aRegIn, load=loadA, out=aRegOut, out[0..14]=addressM);
+
+    Mux16 (a=aRegOut, b=inM, sel=instruction[12], out=aluYIn);
+    ALU (x=dRegOut, y=aluYIn, zx=instruction[11], nx=instruction[10],
+        zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6],
+        out=aluOut, out=outM, zr=aluIsNil, ng=aluIsNeg);
+    
+    // load D if D-dest bit and C-instruction
+    And (a=instruction[4], b=instruction[15], out=loadD);
+    DRegister (in=aluOut, load=loadD, out=dRegOut);
+
+    // jump conditional:
+    // Or(Or(And(instruction[1], aluIsNil), And(instruction[0], And(Not(aluIsNeg), Not(aluIsNil)))),
+    //     And(instruction[2], aluIsNeg))
+
+    // create an "alu is positive" bit
+    Not (in=aluIsNeg, out=aluIsNotNeg);
+    Not (in=aluIsNil, out=aluIsNotNil);
+    And (a=aluIsNotNeg, b=aluIsNotNil, out=aluIsPos);
+
+    And (a=instruction[0], b=aluIsPos, out=j0AndPos);
+    And (a=instruction[1], b=aluIsNil, out=j1AndNil);
+    And (a=instruction[2], b=aluIsNeg, out=j2AndNeg);
+
+    Or (a=j0AndPos, b=j1AndNil, out=j0Orj1Cond);
+    Or (a=j0Orj1Cond, b=j2AndNeg, out=jumpIfCInstr);
+
+    // only jump if C-instruction
+    And (a=jumpIfCInstr, b=instruction[15], out=jump);
+
+    // increment PC if not jumping
+    Not (in=jump, out=inc);
+
+    PC (in=aRegOut, reset=reset, load=jump, inc=inc, out[0..14]=pc);
+
+    // writeM output
+    And (a=instruction[15], b=instruction[3], out=writeM);
 }
