@@ -11,14 +11,20 @@ class Parser
   def advance
     # TODO: handle comments/blank lines at end of file
     loop do
-      l = @file.readline
-      unless is_comment_or_blank?(l)
-        @current = l.chomp("\r\n")
+      line = @file.readline
+      unless is_comment_or_blank?(line)
+        # remove trailing comments, trailing & leading whitespace, carriage returns and newlines
+        @current = line.sub(/\/\/.*/, "").strip
         break
       end
     end
 
     @current
+  end
+
+  def rewind
+    @file.rewind
+    @current = nil
   end
 
   def instruction_type
@@ -57,6 +63,6 @@ class Parser
   private
 
   def is_comment_or_blank?(str)
-    str.start_with?("//") || str.strip == ""
+    str.strip.start_with?("//") || str.strip == ""
   end
 end
