@@ -9,32 +9,10 @@ class Assembler
     @output = File.open(input.gsub(".asm", ".hack"), "w")
   end
 
-  def prepare_symbol_table
-    line_count = 0
-
-    loop do
-      break unless @parser.has_more_lines?
-      @parser.advance
-
-      case @parser.instruction_type
-      when "A_INSTRUCTION"
-        line_count += 1
-      when "C_INSTRUCTION"
-        line_count += 1
-      when "L_INSTRUCTION"
-        @symbol_table.add_entry(@parser.symbol, line_count + 1)
-      end
-    end
-
-    @parser.rewind
-    self
-  end
-
   def assemble
-    loop do
-      break unless @parser.has_more_lines?
-      @parser.advance
+    prepare_symbol_table
 
+    parser_loop do
       case @parser.instruction_type
       when "A_INSTRUCTION"
         int_value = begin
@@ -59,6 +37,32 @@ class Assembler
 
     @output.close
   end
+
+  private
+
+  def prepare_symbol_table
+    line_count = 0
+
+    parser_loop do
+      case @parser.instruction_type
+      when "A_INSTRUCTION", "C_INSTRUCTION"
+        line_count += 1
+      when "L_INSTRUCTION"
+        @symbol_table.add_entry(@parser.symbol, line_count + 1)
+      end
+    end
+
+    @parser.rewind
+  end
+
+  def parser_loop(&block)
+    loop do
+      break unless @parser.has_more_lines?
+      @parser.advance
+
+      yield
+    end
+  end
 end
 
-Assembler.new(ARGV[0]).prepare_symbol_table.assemble
+Assembler.new(ARGV[0]).assemble
