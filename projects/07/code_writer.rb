@@ -95,113 +95,85 @@ class CodeWriter
   private
 
   def push(segment, index)
-    case segment
+    segment_logic = case segment
     when "constant"
       <<~ASM
-        // push #{segment} #{index}
         @#{index}
         D=A
-        #{push_d_to_stack}
       ASM
     when "static"
       <<~ASM
-        // push #{segment} #{index}
         @#{@filename}.#{index}
         D=M
-        #{push_d_to_stack}
       ASM
     when "temp"
       <<~ASM
-        // push #{segment} #{index}
         @#{SEGMENT_SYMBOL_MAP[segment] + index.to_i}
         D=M
-        #{push_d_to_stack}
       ASM
     when "pointer"
       <<~ASM
-        // push #{segment} #{index}
         @#{SEGMENT_SYMBOL_MAP["#{segment} #{index}"]}
         D=M
-        #{push_d_to_stack}
       ASM
     else
       <<~ASM
-        // push #{segment} #{index}
         @#{index}
         D=A
         @#{SEGMENT_SYMBOL_MAP[segment]}
         A=M+D
         D=M
-        #{push_d_to_stack}
       ASM
     end.strip
+
+    <<~ASM
+      // push #{segment} #{index}
+      #{segment_logic}
+      #{push_d_to_stack}
+    ASM
+      .strip
   end
 
   def pop(segment, index)
-    case segment
+    segment_logic = case segment
     when "static"
       <<~ASM
-        // pop #{segment} #{index}
         @#{@filename}.#{index}
         D=A
-        @R13
-        M=D
-        @SP
-        M=M-1
-        A=M
-        D=M
-        @R13
-        A=M
-        M=D
       ASM
     when "temp"
       <<~ASM
-        // pop #{segment} #{index}
         @#{SEGMENT_SYMBOL_MAP[segment] + index.to_i}
         D=A
-        @R13
-        M=D
-        @SP
-        M=M-1
-        A=M
-        D=M
-        @R13
-        A=M
-        M=D
       ASM
     when "pointer"
       <<~ASM
-        // pop #{segment} #{index}
         @#{SEGMENT_SYMBOL_MAP["#{segment} #{index}"]}
         D=A
-        @R13
-        M=D
-        @SP
-        M=M-1
-        A=M
-        D=M
-        @R13
-        A=M
-        M=D
       ASM
     else
       <<~ASM
-        // pop #{segment} #{index}
         @#{index}
         D=A
         @#{SEGMENT_SYMBOL_MAP[segment]}
         D=D+M
-        @R13
-        M=D
-        @SP
-        M=M-1
-        A=M
-        D=M
-        @R13
-        A=M
-        M=D
       ASM
     end.strip
+
+    <<~ASM
+      // pop #{segment} #{index}
+      #{segment_logic}
+      // store D in R13
+      @R13
+      M=D
+      #{pop_and_store_address_in_a}
+      D=M
+      // go to address stored in R13, store D there
+      @R13
+      A=M
+      M=D
+    ASM
+      .strip
   end
 
   def push_d_to_stack

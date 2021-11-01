@@ -12,12 +12,15 @@ M=M+1
 D=A
 @LCL
 D=D+M
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
@@ -44,12 +47,15 @@ M=M+1
 D=A
 @ARG
 D=D+M
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
@@ -58,12 +64,15 @@ M=D
 D=A
 @ARG
 D=D+M
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
@@ -81,12 +90,15 @@ M=M+1
 D=A
 @THIS
 D=D+M
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
@@ -113,12 +125,15 @@ M=M+1
 D=A
 @THAT
 D=D+M
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
@@ -127,12 +142,15 @@ M=D
 D=A
 @THAT
 D=D+M
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
@@ -148,12 +166,15 @@ M=M+1
 // pop temp 6
 @11
 D=A
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D

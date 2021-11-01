@@ -28,36 +28,45 @@ M=M+1
 // pop static 8
 @StaticTest.8
 D=A
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
 // pop static 3
 @StaticTest.3
 D=A
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
 // pop static 1
 @StaticTest.1
 D=A
+// store D in R13
 @R13
 M=D
+// pop and store address in A
 @SP
 M=M-1
 A=M
 D=M
+// go to address stored in R13, store D there
 @R13
 A=M
 M=D
