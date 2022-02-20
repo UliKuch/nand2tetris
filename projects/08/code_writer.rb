@@ -78,6 +78,32 @@ class CodeWriter
     end
   end
 
+  def write_label(label)
+    @output.puts "(#{label})"
+  end
+
+  def write_goto(label)
+    goto = <<~ASM
+      // unconditional jump to label
+      @#{label}
+      0;JMP
+    ASM
+
+    @output.puts goto
+  end
+
+  def write_if(label)
+    if_goto = <<~ASM
+      #{pop_and_store_address_in_a}
+      D=M
+      // jump to label if popped value is not zero
+      @#{label}
+      D;JNE
+    ASM
+
+    @output.puts if_goto
+  end
+
   def infinite_loop
     out = <<~ASM
       (END)

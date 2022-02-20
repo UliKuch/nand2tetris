@@ -15,6 +15,12 @@ class VmTranslator
         @code_writer.write_arithmetic(@parser.arg1)
       when "C_PUSH", "C_POP"
         @code_writer.write_push_pop(@parser.command_type, @parser.arg1, @parser.arg2)
+      when "C_LABEL"
+        @code_writer.write_label(@parser.arg1)
+      when "C_GOTO"
+        @code_writer.write_goto(@parser.arg1)
+      when "C_IF"
+        @code_writer.write_if(@parser.arg1)
       end
     end
 
