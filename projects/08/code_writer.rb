@@ -104,6 +104,105 @@ class CodeWriter
     @output.puts if_goto
   end
 
+  def write_function(function_name, n_vars)
+    funct = <<~ASM
+      (#{function_name})
+      // initialize local variables
+      @#{n_vars}
+      D=A
+      (#{function_name}$INIT_LCL_VAR)
+      // break loop if D is 0
+      @#{function_name}$CONT
+      D;JEQ
+      D=D-1
+      // push 0 to stack
+      @SP
+      A=M
+      M=0
+      @SP
+      M=M+1
+      @#{function_name}$INIT_LCL_VAR
+      0;JMP
+      (#{function_name}$CONT)
+    ASM
+
+    @output.puts funct
+  end
+
+  def write_call(function_name, n_args)
+  end
+
+  def write_return
+    ret = <<~ASM
+      // save LCL (as frame) in R14
+      @LCL
+      D=M
+      @R14
+      M=D
+      // save return address in R15
+      @5
+      D=D-A
+      A=D // we don't want to save (frame-5)
+      D=M // but a pointer to what is saved in (frame - 5), i.e. *(frame - 5) (I think...)
+      @R15
+      M=D
+      // set memory ARG points to to popped value
+      #{pop_and_store_address_in_a}
+      D=M
+      @ARG
+      A=M
+      M=D
+      // set SP to ARG+1
+      @ARG
+      D=M
+      D=D+1
+      @SP
+      M=D
+      // set THAT to *(frame - 1)
+      @R14
+      D=M
+      @1
+      D=D-A
+      A=D
+      D=M
+      @THAT
+      M=D
+      // set THIS to *(frame - 2)
+      @R14
+      D=M
+      @2
+      D=D-A
+      A=D
+      D=M
+      @THIS
+      M=D
+      // set ARG to *(frame - 3)
+      @R14
+      D=M
+      @3
+      D=D-A
+      A=D
+      D=M
+      @ARG
+      M=D
+      // set LCL to *(frame - 4)
+      @R14
+      D=M
+      @4
+      D=D-A
+      A=D
+      D=M
+      @LCL
+      M=D
+      // goto return address
+      @R15
+      A=M
+      0;JMP
+    ASM
+
+    @output.puts ret
+  end
+
   def infinite_loop
     out = <<~ASM
       (END)
