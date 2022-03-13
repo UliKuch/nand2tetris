@@ -25,6 +25,12 @@ class CodeWriter
     @output = File.open(output, "w")
     @filename = output.split("/").last.split(".").first
     @comp_jump_counter = 0
+    initialize_stack_pointer
+    write_call("Sys.init", 0)
+  end
+
+  def set_file_name(filename)
+    @filename = filename
   end
 
   def write_arithmetic(command)
@@ -130,6 +136,50 @@ class CodeWriter
   end
 
   def write_call(function_name, n_args)
+    @comp_jump_counter += 1
+
+    call = <<~ASM
+      // generate and push return address to stack
+      @#{function_name}$ret.#{@comp_jump_counter}
+      D=A
+      #{push_d_to_stack}
+      // push LCL to stack
+      @LCL
+      D=M
+      #{push_d_to_stack}
+      // push ARG to stack
+      @ARG
+      D=M
+      #{push_d_to_stack}
+      // push THIS to stack
+      @THIS
+      D=M
+      #{push_d_to_stack}
+      // push THAT to stack
+      @THAT
+      D=M
+      #{push_d_to_stack}
+      // set ARG to SP - 5 - n_args
+      @SP
+      D=M
+      @5
+      D=D-A
+      @#{n_args}
+      D=D-A
+      @ARG
+      M=D
+      // set LCL to SP
+      @SP
+      D=M
+      @LCL
+      M=D
+      // goto function
+      @#{function_name}
+      0;JMP
+      (#{function_name}$ret.#{@comp_jump_counter})
+    ASM
+
+    @output.puts call
   end
 
   def write_return
@@ -203,15 +253,15 @@ class CodeWriter
     @output.puts ret
   end
 
-  def infinite_loop
-    out = <<~ASM
-      (END)
-      @END
-      0;JMP
-    ASM
+  # def infinite_loop
+  #   out = <<~ASM
+  #     (END)
+  #     @END
+  #     0;JMP
+  #   ASM
 
-    @output.puts out
-  end
+  #   @output.puts out
+  # end
 
   def close
     @output.close
@@ -321,5 +371,17 @@ class CodeWriter
       A=M
     ASM
       .strip
+  end
+
+  def initialize_stack_pointer
+    sp_init = <<~ASM
+      // initialize stack pointer
+      @256
+      D=A
+      @SP
+      M=D
+    ASM
+
+    @output.puts sp_init
   end
 end
